@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - Virtual Try-On</title>
+  <link rel="stylesheet" href="style/login.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+  <div class="login-container">
+    <div class="form-box">
+      <h2>🔐 Welcome Back</h2>
+      <form id="login-form">
+        <div class="input-group">
+          <input type="email" id="email" required />
+          <label for="email">Email</label>
+        </div>
+        <div class="input-group">
+          <input type="password" id="password" required />
+          <label for="password">Password</label>
+        </div>
+        <button type="submit" class="btn">Login</button>
+      </form>
+      <p class="signup-link" style="margin-top: 10px; font-size: 0.9em;">
+        <a href="#" id="forgot-password-link" style="color: #666;">Forgot Password?</a>
+      </p>
+      <p class="signup-link">Don’t have an account? <a href="signup.html">Sign Up</a></p>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <p class="loading-text">Please wait...</p>
+  </div>
+
+  <script type="module" src="js/login.js"></script>
+</body>
+</html>

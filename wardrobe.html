@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>My Wardrobe - AI Try-On</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style/style.css" />
+  <link rel="stylesheet" href="style/wardrobe.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <button id="theme-toggle-btn" class="theme-toggle-btn">🌙</button>
+    <ul class="nav-links">
+      <li><a href="tryon.html">Home</a></li>
+      <li><a href="#" class="active">Wardrobe</a></li>
+    </ul>
+    <div class="logo">AI Try-On</div>
+    <div class="user-menu" id="user-info-nav">
+      <!-- User info injected here -->
+      <button onclick="logout()" class="nav-btn">Logout</button>
+    </div>
+  </nav>
+
+  <div class="main-wrapper" style="display: block; overflow-y: auto;">
+    <div class="wardrobe-container">
+      <header>
+        <h1 style="color: #ff4757; text-align: center; margin-bottom: 20px;">My Digital Wardrobe</h1>
+      </header>
+
+      <!-- Filters -->
+      <div class="filters">
+        <div class="filter-group">
+          <label>Combo Style</label>
+          <select id="style-filter">
+            <option value="">All Styles</option>
+            <option value="formal">Formal</option>
+            <option value="casual">Casual</option>
+            <option value="party">Party</option>
+            <option value="Unknown">Custom/Other</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Accessory Used</label>
+          <select id="accessory-filter">
+            <option value="">Any</option>
+            <option value="glasses">Glasses</option>
+            <option value="watch">Watch</option>
+            <option value="chain">Chain</option>
+            <!-- Add more based on keys -->
+          </select>
+        </div>
+
+        <button class="btn filter-btn" onclick="applyFilters()">Apply Filters</button>
+        <button class="btn reset-btn" onclick="resetFilters()">Reset</button>
+      </div>
+
+      <div id="wardrobe-list" class="outfits-section">
+        <!-- Outfits will appear here -->
+        <p style="text-align:center; color:#777;">Loading...</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/theme.js"></script>
+  <script type="module" src="js/wardrobe.js"></script>
+</body>
+
+</html>

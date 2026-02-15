@@ -1,0 +1,447 @@
+/* === MODERN HERO THEME === */
+:root {
+  /* Default Dark Theme */
+  --bg-color: #1e2024;
+  --panel-bg: #2f3542;
+  --panel-gradient: radial-gradient(circle at center, #2f3542 0%, #1e2024 100%);
+  --text-color: #f1f2f6;
+  --text-muted: #a4b0be;
+  /* Labels/Secondary text */
+  --border-color: #57606f;
+  --accent-color: #ff4757;
+  /* Coral */
+  --accent-hover: #ff6b81;
+  --navbar-bg: #2f3542;
+  --input-bg: #1e2024;
+  --card-bg: #1e2024;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+.light-theme {
+  /* Light Theme Overrides */
+  --bg-color: #f1f2f6;
+  --panel-bg: #ffffff;
+  --panel-gradient: radial-gradient(circle at center, #ffffff 0%, #f1f2f6 100%);
+  --text-color: #2f3542;
+  --text-muted: #57606f;
+  --border-color: #dfe4ea;
+  --accent-color: #ff4757;
+  /* Keep accent same or adjust if needed */
+  --accent-hover: #ff6b81;
+  --navbar-bg: #ffffff;
+  --input-bg: #ffffff;
+  --card-bg: #ffffff;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+  /* Smooth theme transition */
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-color);
+  /* Deep modern dark */
+  color: var(--text-color);
+  height: 100vh;
+  overflow: hidden;
+  /* We'll scroll inside panels */
+}
+
+/* NAVBAR */
+.navbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr;
+  /* Toggle - Links - Logo - User */
+  align-items: center;
+  padding: 15px 40px;
+  background-color: var(--navbar-bg);
+  box-shadow: 0 2px 10px var(--shadow-color);
+  height: 70px;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  gap: 20px;
+}
+
+.theme-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.3s;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--bg-color);
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.navbar .logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent-color);
+  /* Coral */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  justify-self: center;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 30px;
+  justify-self: start;
+}
+
+.nav-links li a {
+  text-decoration: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  transition: color 0.3s;
+}
+
+.nav-links li a:hover,
+.nav-links li a.active {
+  color: var(--accent-color);
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 14px;
+  color: var(--text-muted);
+  justify-self: end;
+}
+
+.nav-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 6px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s;
+}
+
+.nav-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* MAIN LAYOUT */
+.main-wrapper {
+  display: flex;
+  height: calc(100vh - 70px);
+  /* Subtract navbar height */
+  margin-top: 70px;
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* PANELS */
+.left-panel {
+  width: 400px;
+  min-width: 350px;
+  background-color: var(--panel-bg);
+  padding: 30px;
+  overflow-y: auto;
+  border-right: 1px solid var(--border-color);
+}
+
+.right-panel {
+  flex: 1;
+  background: var(--panel-gradient);
+  padding: 40px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* TYPOGRAPHY */
+h2.section-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 25px;
+  color: var(--text-color);
+  text-align: center;
+  border-bottom: 2px solid var(--accent-color);
+  padding-bottom: 10px;
+  display: inline-block;
+}
+
+h3 {
+  font-size: 16px;
+  color: var(--text-muted);
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+hr.divider {
+  border: 0;
+  height: 1px;
+  background: var(--border-color);
+  margin: 30px 0;
+}
+
+/* CONTROLS & CONTROLS */
+.control-group {
+  margin-bottom: 25px;
+}
+
+.control-group label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.upload-box {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+input[type="file"] {
+  background: var(--input-bg);
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  width: 100%;
+  font-size: 13px;
+}
+
+/* BUTTONS (Restored Prominence) */
+button {
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+}
+
+.primary-btn {
+  background-color: var(--accent-color);
+  /* Coral Red */
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 4px;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+}
+
+.primary-btn:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 71, 87, 0.4);
+}
+
+.secondary-btn {
+  background: var(--border-color);
+  color: var(--text-color);
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.secondary-btn:hover {
+  background: #747d8c;
+  /* Keep simple hover */
+  color: white;
+}
+
+.action-btn {
+  /* Wardrobe/Save buttons */
+  background: #2ed573;
+  /* Green or maybe Blue? Let's use Coral for Wardrobe heavily requested */
+  background: #3742fa;
+  /* Blue for Save */
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.action-btn:nth-child(2) {
+  /* Wardrobe button specifically */
+  background: var(--accent-color);
+  /* Let's stick to the Red theme for primary actions */
+}
+
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.outline-btn {
+  background: transparent;
+  border: 2px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.outline-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* CLOTHING GRID */
+.cloth-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.cloth-btn {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.cloth-btn:hover {
+  border-color: var(--accent-color);
+  color: white;
+  background: var(--accent-color);
+}
+
+/* ACCESSORIES */
+.accessory-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.accessory-item {
+  background: var(--card-bg);
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.accessory-item label {
+  font-size: 12px;
+  color: var(--accent-color);
+  margin-bottom: 5px;
+  display: block;
+  font-weight: 700;
+}
+
+/* RESULT AREA */
+.result-box {
+  width: 100%;
+  min-height: 450px;
+  background: var(--card-bg);
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.placeholder-text {
+  color: var(--border-color);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Features */
+.extra-features {
+  width: 100%;
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+}
+
+.feature-block {
+  flex: 1;
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .main-wrapper {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .left-panel,
+  .right-panel {
+    width: 100%;
+    height: auto;
+  }
+
+  .navbar {
+    padding: 15px 20px;
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .navbar .logo {
+    display: none;
+    /* Hide logo on very small screens to fit buttons */
+  }
+
+  .nav-links {
+    display: flex;
+    /* Keep visible for now */
+    gap: 15px;
+  }
+}

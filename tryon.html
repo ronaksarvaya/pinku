@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>AI Virtual Try-On for Men</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif !important;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/theme.js"></script>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <button id="theme-toggle-btn" class="theme-toggle-btn">🌙</button>
+        <ul class="nav-links">
+            <li><a href="#" class="active">Home</a></li>
+            <li><a href="wardrobe.html">Wardrobe</a></li>
+        </ul>
+        <div class="logo">AI Try-On</div>
+        <div class="user-menu" id="user-info-nav">
+            <!-- User info will be injected here -->
+            <button onclick="logout()" class="nav-btn">Logout</button>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="left-panel">
+            <h2 class="section-title">Upload & Customize</h2>
+
+            <div class="control-group">
+                <label>1. Your Photo</label>
+                <div class="upload-box">
+                    <input type="file" id="user-image" accept="image/*" />
+                    <button onclick="startWebcam()" class="secondary-btn">📷 Webcam</button>
+                </div>
+                <video id="webcam" autoplay style="display:none;"></video>
+                <button id="capture-btn" onclick="capturePhoto()" style="display:none;">📸 Capture</button>
+                <canvas id="webcam-canvas" style="display:none;"></canvas>
+            </div>
+
+            <hr class="divider" />
+
+            <div class="control-group">
+                <label>2. Choose Clothing</label>
+                <div id="cloth_section" class="cloth-grid">
+                    <button onclick="document.getElementById('shirt-upload').click()" class="cloth-btn">Shirt</button>
+                    <input type="file" id="shirt-upload" accept="image/*" style="display:none">
+
+                    <button onclick="document.getElementById('tshirt-upload').click()"
+                        class="cloth-btn">T-Shirt</button>
+                    <input type="file" id="tshirt-upload" accept="image/*" style="display:none">
+
+                    <button onclick="document.getElementById('pant-upload').click()" class="cloth-btn">Pant</button>
+                    <input type="file" id="pant-upload" accept="image/*" style="display:none">
+
+                    <button onclick="document.getElementById('jacket-upload').click()" class="cloth-btn">Jacket</button>
+                    <input type="file" id="jacket-upload" accept="image/*" style="display:none">
+                </div>
+            </div>
+
+            <hr class="divider" />
+
+            <div class="control-group">
+                <label>⚙️ Backend Config</label>
+                <input type="text" id="api-url" placeholder="Paste Colab/Ngrok URL here..."
+                    style="background: #2f3542; border: 1px solid #ff4757; color: chartreuse; font-family: monospace;"
+                    onchange="updateApiUrl(this.value)" />
+                <small style="color: #a4b0be; font-size: 11px;">Example: https://xxxx.ngrok-free.app</small>
+            </div>
+
+            <button id="ai-tryon-btn" onclick="triggerApiTryon()" class="primary-btn hero-btn">
+                ✨ GENERATE TRY-ON
+            </button>
+
+            <section id="accessories-section">
+                <h3>3. Accessories</h3>
+                <div class="accessory-grid">
+                    <div class="accessory-item"><label>Glasses</label><input type="file" id="glasses-image"
+                            accept="image/*" /></div>
+                    <div class="accessory-item"><label>Watch</label><input type="file" id="watch-image"
+                            accept="image/*" /></div>
+                    <div class="accessory-item"><label>Chain</label><input type="file" id="chain-image"
+                            accept="image/*" /></div>
+                    <div class="accessory-item"><label>Earring</label><input type="file" id="earring-image"
+                            accept="image/*" /></div>
+                    <div class="accessory-item"><label>Bag</label><input type="file" id="bag-image" accept="image/*" />
+                    </div>
+                    <div class="accessory-item"><label>Shoes</label><input type="file" id="shoes-image"
+                            accept="image/*" /></div>
+                </div>
+            </section>
+        </div>
+
+        <div class="right-panel">
+            <h2 class="section-title">Virtual Result</h2>
+            <div id="tryon-result" class="result-box">
+                <div class="placeholder-text">Result will appear here</div>
+            </div>
+
+            <div class="action-buttons">
+                <button onclick="saveAsImage()" class="action-btn">💾 Save Image</button>
+                <button onclick="saveToWardrobe()" class="action-btn">❤️ Save to Wardrobe</button>
+            </div>
+
+            <hr class="divider" />
+
+            <div class="extra-features">
+                <div class="feature-block">
+                    <h3>Quick Combos</h3>
+                    <div class="combo-buttons">
+                        <button onclick="applyCombo('formal')" class="outline-btn">Formal</button>
+                        <button onclick="applyCombo('casual')" class="outline-btn">Casual</button>
+                        <button onclick="applyCombo('party')" class="outline-btn">Party</button>
+                    </div>
+                </div>
+
+                <div class="feature-block">
+                    <h3>AI Stylist</h3>
+                    <button onclick="generateRecommendation()" class="outline-btn">🔍 Get Suggestion</button>
+                    <div id="recommendation" style="display:none;">
+                        <p id="rec-text"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading-overlay"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); display: none; justify-content: center; align-items: center; flex-direction: column; z-index: 1000;">
+        <div class="loader-content" style="text-align: center;">
+            <div class="spinner"
+                style="border: 4px solid #334155; border-radius: 50%; border-top: 4px solid #3b82f6; width: 50px; height: 50px; animation: spin 1s linear infinite;">
+            </div>
+            <p class="loading-text" style="margin-top: 15px; color: #e2e8f0; font-weight: 600;">Processing...</p>
+        </div>
+    </div>
+
+    <style>
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <script type="module" src="js/tryon.js"></script>
+</body>
+
+</html>
