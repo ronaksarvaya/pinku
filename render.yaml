@@ -10,7 +10,7 @@ services:
       - key: PYTHON_VERSION
         value: "3.11.11"
       - key: USE_MOCK_AI
-        value: "True"
+        value: "False"
       - key: CORS_ORIGINS
         value: "*"
       # Set these in the Render dashboard (not in code) for security:

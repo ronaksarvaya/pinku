@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = "*"
 
     # AI Try-On
-    USE_MOCK_AI: bool = True
+    USE_MOCK_AI: bool = False
     HF_TOKEN: str = ""  # HuggingFace token for higher ZeroGPU quota
 
     # Google Gemini
