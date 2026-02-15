@@ -11,8 +11,8 @@ class Settings(BaseSettings):
     """Application settings loaded from .env file."""
 
     # Server
-    HOST: str = "127.0.0.1"
-    PORT: int = 8001
+    HOST: str = "0.0.0.0"
+    PORT: int = 10000
 
     # CORS — comma-separated origins, or "*" for all
     CORS_ORIGINS: str = "*"

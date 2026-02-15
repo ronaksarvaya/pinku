@@ -76,8 +76,14 @@ def create_app() -> FastAPI:
 
     # ── Static Files ────────────────────────────────────────────────
     from fastapi.staticfiles import StaticFiles
+    from pathlib import Path
+
     settings.STORAGE_DIR.mkdir(parents=True, exist_ok=True)
     app.mount("/images", StaticFiles(directory=settings.STORAGE_DIR), name="images")
+
+    # Serve frontend files (HTML/JS/CSS) — avoids file:// CORS issues
+    frontend_dir = Path(__file__).resolve().parent.parent.parent  # e:\pinku
+    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
 
     # ── Database ────────────────────────────────────────────────────
     from app.database import init_db

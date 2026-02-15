@@ -47,4 +47,3 @@ cd backend
 pytest tests/ -v
 ```
 
-Tests run in mock mode and don't require external API keys.

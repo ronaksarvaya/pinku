@@ -4,6 +4,17 @@ import { supabase } from "./supabase-config.js";
 // === VITON-HD API INTEGRATION CONFIGURATION ===
 // =================================================================
 let API_BASE_URL = localStorage.getItem("api_url") || ""; // Load from storage or empty
+
+// ── HF Token (session-only, never permanently stored) ─────────────
+function getSessionHFToken() {
+    return sessionStorage.getItem("hf_token") || null;
+}
+function setSessionHFToken(token) {
+    sessionStorage.setItem("hf_token", token);
+}
+function clearSessionHFToken() {
+    sessionStorage.removeItem("hf_token");
+}
 const POLLING_INTERVAL = 1000;
 
 // Expose function to update URL from UI
@@ -104,10 +115,16 @@ window.triggerApiTryon = async function () {
     formData.append('person_image', userImageFile); // Note keys match Colab: person_image
     formData.append('garment_image', clothFile);    // Note keys match Colab: garment_image
 
+    // Attach HF token if available in session
+    const sessionToken = getSessionHFToken();
+    if (sessionToken) {
+        formData.append('hf_token', sessionToken);
+    }
+
     try {
         if (!API_BASE_URL) throw new Error("Please enter Server URL first.");
 
-        // 2. POST Request (Synchronous wait for Colab)
+        // 2. POST Request
         const response = await fetch(`${API_BASE_URL}/try_on`, {
             method: 'POST',
             body: formData,
@@ -115,21 +132,16 @@ window.triggerApiTryon = async function () {
 
         const data = await response.json();
 
+        // 3. Check if server needs an HF token
+        if (data.status === "error" && data.error_code === "hf_token_required") {
+            hideLoader();
+            showHFTokenModal(data.message);
+            return; // Wait for user to enter token — modal will auto-retry
+        }
+
         if (data.status === "success" && (data.image_url || data.image)) {
             // 4. Result captured!
-            // Prefer image_url, fallback to image (legacy base64)
             let imageUrl = data.image_url || data.image;
-
-            // If it's a relative URL (starts with /), prepend API_BASE_URL if needed
-            // But usually browsers handle relative URLs relative to the current page.
-            // Our backend returns a full URL if request is passed, or full path. 
-            // If it's just path "/images/..." and API is on different port/domain, we need to prepend.
-            if (imageUrl.startsWith("/") && API_BASE_URL && !imageUrl.startsWith(API_BASE_URL)) {
-                // Check if API_BASE_URL already has the host
-                // Actually the backend now returns: 
-                // full_url = str(request.base_url).rstrip("/") + image_url_path
-                // So it should be absolute: http://localhost:8001/images/...
-            }
 
             // Final result display
             tryonResult.innerHTML = `<div style="position: relative;">
@@ -624,5 +636,89 @@ window.addEventListener("DOMContentLoaded", () => {
         } catch (e) {
             console.error("Error parsing retry data:", e);
         }
+    }
+});
+
+
+// =================================================================
+// === HF TOKEN MODAL CONTROLLER ===
+// =================================================================
+
+function showHFTokenModal(errorMessage) {
+    const overlay = document.getElementById('hf-modal-overlay');
+    const errorDiv = document.getElementById('hf-modal-error');
+    const input = document.getElementById('hf-token-input');
+
+    // Show error message from server
+    if (errorMessage) {
+        errorDiv.textContent = errorMessage;
+        errorDiv.style.display = 'block';
+    } else {
+        errorDiv.style.display = 'none';
+    }
+
+    // Pre-fill if session has a token (user might be re-entering)
+    const existing = getSessionHFToken();
+    if (existing) input.value = existing;
+
+    overlay.style.display = 'flex';
+    input.focus();
+}
+
+function hideHFTokenModal() {
+    document.getElementById('hf-modal-overlay').style.display = 'none';
+    document.getElementById('hf-token-input').value = '';
+    document.getElementById('hf-modal-error').style.display = 'none';
+}
+
+// Submit button
+document.getElementById('hf-token-submit')?.addEventListener('click', () => {
+    const input = document.getElementById('hf-token-input');
+    const errorDiv = document.getElementById('hf-modal-error');
+    const token = input.value.trim();
+
+    // Validate format: must start with hf_ and be reasonable length
+    if (!token) {
+        errorDiv.textContent = 'Please enter a token.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    if (!token.startsWith('hf_') || token.length < 10) {
+        errorDiv.textContent = 'Invalid format. Token must start with "hf_" and be at least 10 characters.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    // Store in session and retry
+    setSessionHFToken(token);
+    hideHFTokenModal();
+
+    Swal.fire({
+        title: 'Token saved!',
+        text: 'Retrying your try-on request...',
+        icon: 'info',
+        timer: 1500,
+        showConfirmButton: false,
+    });
+
+    // Auto-retry the try-on
+    setTimeout(() => {
+        window.triggerApiTryon();
+    }, 800);
+});
+
+// Cancel button
+document.getElementById('hf-token-cancel')?.addEventListener('click', hideHFTokenModal);
+
+// Toggle password visibility
+document.getElementById('hf-token-toggle')?.addEventListener('click', () => {
+    const input = document.getElementById('hf-token-input');
+    input.type = input.type === 'password' ? 'text' : 'password';
+});
+
+// Allow Enter key to submit
+document.getElementById('hf-token-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        document.getElementById('hf-token-submit').click();
     }
 });

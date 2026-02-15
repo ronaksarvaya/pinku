@@ -3,11 +3,13 @@ Try-On router — handles virtual try-on image generation.
 """
 import logging
 
-from fastapi import APIRouter, File, UploadFile, HTTPException, Request
+from fastapi import APIRouter, File, Form, UploadFile, HTTPException, Request
+from fastapi.responses import JSONResponse
 
 from app.models.schemas import TryOnResponse
 from app.services.tryon_service import process_tryon
 from app.utils.image_utils import save_upload_to_temp, save_base64_to_storage
+from app.utils.hf_errors import HFTokenError
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +25,17 @@ router = APIRouter(tags=["Try-On"])
 async def try_on(
     person_image: UploadFile = File(..., description="Photo of the person"),
     garment_image: UploadFile = File(..., description="Photo of the clothing item"),
-    request: Request = None,  # To reconstruct absolute URL if needed (optional)
-) -> TryOnResponse:
+    hf_token: str | None = Form(None, description="Optional user-provided HuggingFace token"),
+    request: Request = None,
+) -> TryOnResponse | JSONResponse:
     """Process a virtual try-on request."""
     logger.info(f"Try-on request: person={person_image.filename}, garment={garment_image.filename}")
+
+    # Sanitize token — never log it
+    if hf_token is not None:
+        hf_token = hf_token.strip() or None
+        if hf_token:
+            logger.info("User-provided HF token received (not logged for security)")
 
     try:
         # Save uploads to temp directory
@@ -34,24 +43,11 @@ async def try_on(
         clothing_path = await save_upload_to_temp(garment_image, prefix="garment")
 
         # Process try-on (mock or real) -> Returns base64 string
-        result_data_uri = await process_tryon(person_path, clothing_path)
+        result_data_uri = await process_tryon(person_path, clothing_path, hf_token=hf_token)
 
         # Decode base64 and save to persistent storage
         image_url_path = save_base64_to_storage(result_data_uri)
 
-        # Construct full URL if needed, or just return path (frontend can prepend base URL)
-        # For now, let's return the relative path from the server root, which is what we stored.
-        # But to be helpful, let's make it a full URL if we can, or at least absolute path.
-        # storage path logic returns "/images/..."
-        
-        # If we want absolute URL:
-        # base_url = str(request.base_url).rstrip("/")
-        # full_url = f"{base_url}{image_url_path}"
-        
-        # But the requirement said "exposes a public URL". 
-        # Since we mounted /images, the relative path "/images/..." is valid for the current domain.
-        # Let's return just the path for simplicity, or full URL to be robust. 
-        # "http://server/images/<filename>.webp" was the example.
         if request:
             full_url = str(request.base_url).rstrip("/") + image_url_path
         else:
@@ -59,6 +55,18 @@ async def try_on(
 
         logger.info(f"Try-on completed successfully. Saved to: {image_url_path}")
         return TryOnResponse(status="success", image_url=full_url)
+
+    except HFTokenError as e:
+        # Structured error — frontend detects error_code to show token modal
+        logger.warning(f"HF token error: {e.user_message}")
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "error_code": e.error_code,
+                "message": e.user_message,
+            },
+        )
 
     except Exception as e:
         logger.error(f"Try-on failed: {e}", exc_info=True)

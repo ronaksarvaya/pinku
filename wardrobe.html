@@ -5,9 +5,10 @@
   <meta charset="UTF-8" />
   <title>My Wardrobe - AI Try-On</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Browse and manage your saved virtual try-on outfits in your digital wardrobe." />
   <link rel="stylesheet" href="style/style.css" />
   <link rel="stylesheet" href="style/wardrobe.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -28,7 +29,8 @@
   <div class="main-wrapper" style="display: block; overflow-y: auto;">
     <div class="wardrobe-container">
       <header>
-        <h1 style="color: #ff4757; text-align: center; margin-bottom: 20px;">My Digital Wardrobe</h1>
+        <h1>My Digital Wardrobe</h1>
+        <p class="wardrobe-subtitle">Your saved virtual try-on looks</p>
       </header>
 
       <!-- Filters -->
@@ -51,7 +53,6 @@
             <option value="glasses">Glasses</option>
             <option value="watch">Watch</option>
             <option value="chain">Chain</option>
-            <!-- Add more based on keys -->
           </select>
         </div>
 
@@ -61,7 +62,7 @@
 
       <div id="wardrobe-list" class="outfits-section">
         <!-- Outfits will appear here -->
-        <p style="text-align:center; color:#777;">Loading...</p>
+        <p style="text-align:center; color: var(--text-muted); grid-column: 1 / -1; padding: 40px 0;">Loading...</p>
       </div>
     </div>
   </div>
