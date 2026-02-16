@@ -143,8 +143,18 @@ window.applyFilters = function () {
   const accFilter = document.getElementById("accessory-filter").value;
 
   const filtered = allOutfits.filter(outfit => {
-    const matchesStyle = styleFilter ? outfit.style === styleFilter : true;
-    const matchesAccessory = accFilter ? outfit.accessories[accFilter] : true;
+    const rawStyle = outfit.style || "";
+    const matchesStyle = styleFilter ? rawStyle.toLowerCase() === styleFilter.toLowerCase() : true;
+
+    // Check accessories (keys of the object)
+    let matchesAccessory = true;
+    if (accFilter) {
+      if (!outfit.accessories) matchesAccessory = false;
+      else {
+        const accKeys = Object.keys(outfit.accessories).map(k => k.toLowerCase());
+        matchesAccessory = accKeys.includes(accFilter.toLowerCase());
+      }
+    }
     return matchesStyle && matchesAccessory;
   });
 

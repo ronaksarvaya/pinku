@@ -350,8 +350,41 @@ window.saveToWardrobe = async function () {
 
     if (!container || !baseImg) return Swal.fire("❌", "Try on something (or upload a photo) first.", "info");
 
-    showLoader("Saving outfit...");
+    // --- NEW: Metadata Prompt ---
+    const { value: formValues } = await Swal.fire({
+        title: 'Save to Wardrobe',
+        html:
+            '<select id="swal-style" class="swal2-input">' +
+            '<option value="" disabled selected>Select Style Combo</option>' +
+            '<option value="Casual">Casual</option>' +
+            '<option value="Formal">Formal</option>' +
+            '<option value="Streetwear">Streetwear</option>' +
+            '<option value="Party">Party</option>' +
+            '<option value="Other">Other</option>' +
+            '</select>' +
+            '<input id="swal-accessory" class="swal2-input" placeholder="Accessory Name (Optional)">',
+        focusConfirm: false,
+        showCancelButton: true,
+        preConfirm: () => {
+            return [
+                document.getElementById('swal-style').value,
+                document.getElementById('swal-accessory').value
+            ]
+        }
+    });
 
+    if (!formValues) return; // User cancelled
+
+    const [styleName, accessoryName] = formValues;
+    if (!styleName) return Swal.fire("Style Required", "Please select a style category.", "warning");
+
+    showLoader("Saving outfit...");
+    // Call internal save with metadata
+    await _internalSaveToWardrobe(user, container, baseImg, styleName, accessoryName);
+};
+
+// Internal function to handle the actual saving logic (refactored from original saveToWardrobe)
+async function _internalSaveToWardrobe(user, container, baseImg, styleName, accessoryName) {
     try {
         // 1. Upload Cloth Image (if base64)
         let clothUrl = selectedCloth;
@@ -430,12 +463,9 @@ window.saveToWardrobe = async function () {
                             .insert([{
                                 user_id: user.id,
                                 image_url: publicUrl,
-                                cloth_url: clothUrl, // assuming we want to save this too, though schema didn't explicitly say. Extra fields are fine if col exists or JSONB. 
-                                // Actually let's stick to the schema I assumed: image_url. 
-                                // But the original code saved 'cloth', 'accessories', 'style'.
-                                // I should probably create a JSONB column for metadata or just ignore for now if not critical. 
-                                // Let's try to save extra data in a 'metadata' column if possible, or just skip it to be safe with the simple schema I proposed.
-                                // Or hey, I can just save image_url which is the composite.
+                                cloth_url: clothUrl,
+                                style: styleName, // Saved from user input
+                                accessories: accessoryName ? { [accessoryName]: true, ...accessories } : accessories,
                                 created_at: new Date()
                             }]);
 
@@ -478,6 +508,7 @@ window.generateRecommendation = async function () {
         const body = {
             clothing_type: clothingType,
             occasion: currentStyle || null,
+            image_data: uploadedImage // Send user/outfit base64 image used in preview
         };
 
         const response = await fetch(`${API_BASE_URL}/recommend`, {

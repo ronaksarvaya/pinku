@@ -2,7 +2,10 @@
 Google Gemini AI service — provides recommendations and style tips.
 """
 import logging
-from typing import Optional
+import base64
+import io
+from PIL import Image
+from typing import Optional, List, Union
 
 from app.config import get_settings
 
@@ -40,6 +43,7 @@ async def get_recommendation(
     occasion: Optional[str] = None,
     preferences: Optional[str] = None,
     colors: Optional[list[str]] = None,
+    image_data: Optional[str] = None,
 ) -> tuple[str, str]:
     """
     Get an AI-powered style recommendation.
@@ -53,8 +57,26 @@ async def get_recommendation(
         return _fallback_recommendation(clothing_type, occasion), "fallback"
 
     try:
-        prompt = _build_recommendation_prompt(clothing_type, occasion, preferences, colors)
-        response = model.generate_content(prompt)
+        # Prepare inputs for Gemini
+        prompt_parts = _build_recommendation_prompt(clothing_type, occasion, preferences, colors, has_image=bool(image_data))
+        
+        content = [prompt_parts]
+        
+        if image_data:
+            try:
+                # Remove header if present (e.g. "data:image/png;base64,")
+                if "base64," in image_data:
+                    image_data = image_data.split("base64,")[1]
+                
+                image_bytes = base64.b64decode(image_data)
+                image = Image.open(io.BytesIO(image_bytes))
+                content.append(image)
+                logger.info("Image attached to recommendation request")
+            except Exception as img_err:
+                logger.error(f"Failed to process image for recommendation: {img_err}")
+                # Continue without image if it fails
+
+        response = model.generate_content(content)
         suggestion = response.text.strip()
         logger.info("Gemini recommendation generated successfully")
         return suggestion, "gemini"
@@ -92,13 +114,17 @@ def _build_recommendation_prompt(
     occasion: Optional[str],
     preferences: Optional[str],
     colors: Optional[list[str]],
+    has_image: bool = False,
 ) -> str:
     """Build a structured prompt for Gemini recommendation."""
     parts = [
-        "You are an expert men's fashion stylist. Based on the following details, "
-        "provide a concise style recommendation (3-4 sentences). "
-        "Suggest specific accessories, shoes, and complementary clothing items. "
-        "Be practical and specific about colors and styles."
+        "You are an expert personal stylist. Analyze the user's request" + 
+        (" and the provided image of the user" if has_image else "") + "."
+        "Provide a 'Pro Suggestion' that is personalized.",
+        "If an image is provided, analyze the user's SKIN TONE and features to suggest specific colors "
+        "and styles that complement them best. Mention why these colors work for their skin tone.",
+        "Suggest specific accessories (glasses, jewelry), shoes, and clothing items.",
+        "Keep the advice concise (3-4 sentences), encouraging, and fashion-forward."
     ]
 
     if clothing_type:

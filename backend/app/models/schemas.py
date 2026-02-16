@@ -22,6 +22,7 @@ class RecommendRequest(BaseModel):
     occasion: Optional[str] = Field(None, examples=["formal", "casual", "party"])
     preferences: Optional[str] = Field(None, examples=["minimalist", "bold colors"])
     colors: Optional[list[str]] = Field(None, examples=[["navy", "white"]])
+    image_data: Optional[str] = Field(None, description="Base64 encoded image of the user/outfit for analysis")
 
 
 class RecommendResponse(BaseModel):

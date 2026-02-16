@@ -32,6 +32,7 @@ async def recommend(request: RecommendRequest = None) -> RecommendResponse:
         occasion=request.occasion,
         preferences=request.preferences,
         colors=request.colors,
+        image_data=request.image_data,
     )
 
     return RecommendResponse(
