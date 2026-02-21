@@ -39,14 +39,7 @@ if (!API_BASE_URL) {
 let currentStyle = "formal";
 let uploadedImage = null; // Base64 of the person image
 let selectedCloth = null; // Base64 of the selected clothing item
-const accessories = {
-    glasses: null,
-    watch: null,
-    chain: null,
-    earring: null,
-    bag: null,
-    shoes: null
-};
+const accessories = {};
 
 // DOM Elements
 const userImageInput = document.getElementById('user-image');
@@ -54,12 +47,7 @@ const previewImg = document.getElementById('preview');
 const tryonResult = document.getElementById('tryon-result'); // Target for the AI result
 const aiTryonBtn = document.getElementById('ai-tryon-btn'); // New: For disabling
 
-const glassesInput = document.getElementById('glasses-image');
-const watchInput = document.getElementById('watch-image');
-const chainInput = document.getElementById('chain-image');
-const earringInput = document.getElementById('earring-image');
-const bagInput = document.getElementById('bag-image');
-const shoesInput = document.getElementById('shoes-image');
+const accessoryInput = document.getElementById('accessory-upload');
 
 
 // --- Loader Helpers (Existing) ---
@@ -79,7 +67,7 @@ window.triggerApiTryon = async function () {
     const userImageFile = document.getElementById('user-image').files[0];
 
     // Find the currently selected clothing file from any of the upload inputs
-    const clothInputIds = ['shirt-upload', 'tshirt-upload', 'pant-upload', 'jacket-upload'];
+    const clothInputIds = ['outfit-upload', 'accessory-upload'];
     let clothFile = null;
 
     for (const id of clothInputIds) {
@@ -148,8 +136,7 @@ window.triggerApiTryon = async function () {
                 <img id="ai-result-img" src="${imageUrl}" style="max-width: 100%; max-height: 400px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);" crossorigin="anonymous" />
             </div>`;
 
-            // Add accessories back
-            renderAccessoriesOnResult();
+            // Result display (no draggable accessories)
 
             hideLoader();
             Swal.fire("✅ Done!", "Virtual Try-On successful!", "success");
@@ -168,8 +155,9 @@ window.triggerApiTryon = async function () {
 
 
 // --- REST OF THE LOGIC (Same as before) ---
-['shirt', 'tshirt', 'pant', 'jacket'].forEach(type => {
-    document.querySelector(`#${type}-upload`).addEventListener("change", e => handleUpload(e, type));
+['outfit', 'accessory'].forEach(type => {
+    const el = document.querySelector(`#${type}-upload`);
+    if (el) el.addEventListener("change", e => handleUpload(e, type));
 });
 
 window.triggerUpload = function (type) {
@@ -245,43 +233,10 @@ userImageInput.addEventListener('change', function () {
     reader.readAsDataURL(file);
 });
 
-function handleAccessoryUpload(input, key) {
-    input.addEventListener("change", function () {
-        const file = this.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            accessories[key] = e.target.result;
-            renderAccessoriesOnResult();
-        };
-        reader.readAsDataURL(file);
-    });
-}
-
-handleAccessoryUpload(glassesInput, "glasses");
-handleAccessoryUpload(watchInput, "watch");
-handleAccessoryUpload(chainInput, "chain");
-handleAccessoryUpload(earringInput, "earring");
-handleAccessoryUpload(bagInput, "bag");
-handleAccessoryUpload(shoesInput, "shoes");
 
 
-function makeDraggable(el) {
-    let isDragging = false, offsetX, offsetY;
-    el.addEventListener("mousedown", (e) => {
-        isDragging = true;
-        offsetX = e.clientX - el.offsetLeft;
-        offsetY = e.clientY - el.offsetTop;
-        el.style.zIndex = 999;
-    });
-    document.addEventListener("mousemove", (e) => {
-        if (isDragging) {
-            el.style.left = (e.clientX - offsetX) + 'px';
-            el.style.top = (e.clientY - offsetY) + 'px';
-        }
-    });
-    document.addEventListener("mouseup", () => isDragging = false);
-}
+
+
 
 const isRemote = (url) => url && (url.startsWith('http') || url.startsWith('//'));
 
@@ -300,37 +255,17 @@ function renderPreviewOverlay() {
     }
     html += `</div>`;
     tryonResult.innerHTML = html;
-    renderAccessoriesOnResult();
 }
 
-function renderAccessoriesOnResult() {
-    const container = tryonResult.querySelector('div');
-    if (!container) return;
-    container.querySelectorAll('.accessory').forEach(el => el.remove());
 
-    Object.entries(accessories).forEach(([key, src]) => {
-        if (src) {
-            const img = document.createElement('img');
-            img.src = src;
-            if (isRemote(src)) {
-                img.crossOrigin = "anonymous";
-            }
-            img.className = 'accessory';
-            img.style.position = 'absolute';
-            img.style.top = '100px';
-            img.style.left = '100px';
-            img.style.maxWidth = '70px';
-            img.style.opacity = 0.95;
-            img.style.cursor = 'move';
-            makeDraggable(img);
-            container.appendChild(img);
-        }
-    });
-}
 
 window.saveAsImage = function () {
     const target = document.querySelector("#tryon-result > div");
-    if (!target) return Swal.fire("❌", "Try on something first.", "error");
+    const aiResult = document.getElementById("ai-result-img");
+
+    if (!target || !aiResult) {
+        return Swal.fire("❌ Error", "Please generate a Try-On outfit before saving.", "error");
+    }
 
     html2canvas(target).then(canvas => {
         const link = document.createElement("a");
@@ -345,10 +280,11 @@ window.saveToWardrobe = async function () {
     if (!user) return Swal.fire("Login required", "", "warning");
 
     const container = document.querySelector("#tryon-result > div");
-    // Relaxed check: Just look for any image, not specifically the AI result
-    const baseImg = container ? container.querySelector("img") : null;
+    const baseImg = container ? container.querySelector("img#ai-result-img") : null;
 
-    if (!container || !baseImg) return Swal.fire("❌", "Try on something (or upload a photo) first.", "info");
+    if (!container || !baseImg) {
+        return Swal.fire("❌ Error", "Please generate a Try-On outfit before saving to your wardrobe.", "error");
+    }
 
     // --- NEW: Metadata Prompt ---
     const { value: formValues } = await Swal.fire({
@@ -429,11 +365,7 @@ async function _internalSaveToWardrobe(user, container, baseImg, styleName, acce
             }
         });
 
-        // Draw Accessories
-        const accessoriesEls = container.querySelectorAll('.accessory');
-        accessoriesEls.forEach(acc => {
-            ctx.drawImage(acc, acc.offsetLeft, acc.offsetTop, acc.clientWidth, acc.clientHeight);
-        });
+
 
         // Convert to Blob
         await new Promise((resolve, reject) => {
@@ -493,17 +425,16 @@ async function _internalSaveToWardrobe(user, container, baseImg, styleName, acce
 window.generateRecommendation = async function () {
     if (!API_BASE_URL) return Swal.fire("Setup Required", "Please paste your Server URL in the sidebar.", "info");
 
+    const aiResult = document.getElementById("ai-result-img");
+    if (!uploadedImage || !aiResult) {
+        return Swal.fire("❌ Error", "Please generate a Try-On outfit first before requesting styling suggestions.", "error");
+    }
+
     showLoader("AI is styling you...");
 
     try {
         // Determine clothing type from whichever upload was used
-        let clothingType = null;
-        for (const type of ['shirt', 'tshirt', 'pant', 'jacket']) {
-            if (document.getElementById(`${type}-upload`).files.length > 0) {
-                clothingType = type;
-                break;
-            }
-        }
+        let clothingType = document.getElementById('accessory-upload')?.files.length > 0 ? 'accessory' : 'outfit';
 
         const body = {
             clothing_type: clothingType,

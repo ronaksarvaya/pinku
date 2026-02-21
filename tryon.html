@@ -52,27 +52,17 @@
 
             <div class="control-group">
                 <label>2. Choose Clothing</label>
-                <div id="cloth_section" class="cloth-grid">
-                    <button onclick="document.getElementById('shirt-upload').click()" class="cloth-btn">👔
-                        Shirt</button>
-                    <input type="file" id="shirt-upload" accept="image/*" style="display:none">
-
-                    <button onclick="document.getElementById('tshirt-upload').click()" class="cloth-btn">👕
-                        T-Shirt</button>
-                    <input type="file" id="tshirt-upload" accept="image/*" style="display:none">
-
-                    <button onclick="document.getElementById('pant-upload').click()" class="cloth-btn">👖 Pant</button>
-                    <input type="file" id="pant-upload" accept="image/*" style="display:none">
-
-                    <button onclick="document.getElementById('jacket-upload').click()" class="cloth-btn">🧥
-                        Jacket</button>
-                    <input type="file" id="jacket-upload" accept="image/*" style="display:none">
+                <div id="cloth_section" class="cloth-grid" style="grid-template-columns: 1fr;">
+                    <button onclick="document.getElementById('outfit-upload').click()" class="cloth-btn"
+                        style="padding: 15px; font-size: 16px;">👕
+                        Upload Trial Outfit</button>
+                    <input type="file" id="outfit-upload" accept="image/*" style="display:none">
                 </div>
             </div>
 
             <hr class="divider" />
 
-            <div class="control-group">
+            <div class="control-group" style="display:none;">
                 <label>⚙️ Backend Config</label>
                 <input type="text" id="api-url" placeholder="Paste Colab/Ngrok URL here..."
                     onchange="updateApiUrl(this.value)" />
@@ -85,21 +75,15 @@
             </button>
 
             <section id="accessories-section">
-                <h3>3. Accessories</h3>
-                <div class="accessory-grid">
-                    <div class="accessory-item"><label>Glasses</label><input type="file" id="glasses-image"
-                            accept="image/*" /></div>
-                    <div class="accessory-item"><label>Watch</label><input type="file" id="watch-image"
-                            accept="image/*" /></div>
-                    <div class="accessory-item"><label>Chain</label><input type="file" id="chain-image"
-                            accept="image/*" /></div>
-                    <div class="accessory-item"><label>Earring</label><input type="file" id="earring-image"
-                            accept="image/*" /></div>
-                    <div class="accessory-item"><label>Bag</label><input type="file" id="bag-image" accept="image/*" />
-                    </div>
-                    <div class="accessory-item"><label>Shoes</label><input type="file" id="shoes-image"
-                            accept="image/*" /></div>
+                <h3>3. Try Accessories</h3>
+                <div class="cloth-grid" style="grid-template-columns: 1fr;">
+                    <button onclick="document.getElementById('accessory-upload').click()" class="cloth-btn"
+                        style="padding: 15px; font-size: 16px;">💎
+                        Upload Accessory</button>
+                    <input type="file" id="accessory-upload" accept="image/*" style="display:none">
                 </div>
+                <small style="display:block; margin-top:10px; color:var(--text-muted); text-align:center;">Virtually
+                    apply accessories using AI.</small>
             </section>
         </div>
 
@@ -189,7 +173,7 @@
             }
         })();
     </script>
-    <script type="module" src="js/tryon.js"></script>
+    <script type="module" src="js/tryon.js?v=639072938267657059"></script>
 </body>
 
 </html>
