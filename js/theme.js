@@ -24,4 +24,36 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!themeBtn) return;
         themeBtn.innerHTML = isLight ? "☀️" : "🌙";
     }
+
+    // ── Hamburger Mobile Menu Logic ─────────────────────────────────
+    const navbar = document.querySelector('.navbar');
+    const navLinks = document.querySelector('.nav-links');
+
+    if (navbar && navLinks) {
+        // Create hamburger button dynamically
+        const hamburger = document.createElement('button');
+        hamburger.className = 'hamburger';
+        hamburger.innerHTML = '<span></span><span></span><span></span>';
+
+        // Insert after the theme button, or at the start
+        if (themeBtn) {
+            themeBtn.parentNode.insertBefore(hamburger, themeBtn.nextSibling);
+        } else {
+            navbar.insertBefore(hamburger, navbar.firstChild);
+        }
+
+        // Toggle mobile menu
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('show-menu');
+            hamburger.classList.toggle('toggle-active');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!navbar.contains(e.target)) {
+                navLinks.classList.remove('show-menu');
+                hamburger.classList.remove('toggle-active');
+            }
+        });
+    }
 });

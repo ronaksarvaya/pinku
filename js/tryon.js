@@ -189,12 +189,21 @@ async function checkUser() {
                 .eq('id', user.id)
                 .single();
 
-            if (data && userInfoDiv) {
-                const fullName = data.full_name || user.email;
-                // Just Show Name in Navbar with Logout
+            if (userInfoDiv) {
+                const fullName = data?.full_name || user.user_metadata?.full_name || user.email.split('@')[0];
+                const avatarUrl = user.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=random`;
+                // Show Name, Email and Avatar in Navbar with Profile link
                 userInfoDiv.innerHTML = `
-                    <span style="font-weight:600; color:#ff4757;">Hi, ${fullName.split(' ')[0]}</span>
-                    <button onclick="logout()" class="nav-btn">Logout</button>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="window.location.href='profile.html'" title="Go to Profile">
+                            <img src="${avatarUrl}" id="nav-avatar" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
+                            <div class="nav-user-details" style="display: flex; flex-direction: column; line-height: 1.2;">
+                                <span id="nav-name" style="font-weight:600; color:var(--text); font-size: 14px;">${fullName}</span>
+                                <span id="nav-email" style="font-size: 11px; color: var(--text-muted);">${user.email}</span>
+                            </div>
+                        </div>
+                        <button onclick="logout()" class="nav-btn" style="margin-left: 10px;">Logout</button>
+                    </div>
                 `;
 
                 if (!sessionStorage.getItem("welcomed")) {
