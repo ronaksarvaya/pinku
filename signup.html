@@ -28,6 +28,25 @@
           <label for="email">Email</label>
         </div>
         <div class="input-group">
+          <input type="tel" id="phone" placeholder=" " required />
+          <label for="phone">Phone Number</label>
+        </div>
+        <div class="input-group" style="margin-bottom: 25px;">
+          <select id="gender" required
+            style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text); font-size: 14px; outline: none;">
+            <option value="" disabled selected style="color: #111827; background: #ffffff;">Select Gender</option>
+            <option value="male" style="color: #111827; background: #ffffff;">Male</option>
+            <option value="female" style="color: #111827; background: #ffffff;">Female</option>
+            <option value="transgender" style="color: #111827; background: #ffffff;">Transgender</option>
+            <option value="other" style="color: #111827; background: #ffffff;">Prefer not to say</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <input type="file" id="base-image" accept="image/*" />
+          <label for="base-image" style="top: -10px; font-size: 12px; color: var(--primary);">Full-body image (Optional
+            Default Base)</label>
+        </div>
+        <div class="input-group">
           <input type="password" id="password" placeholder=" " required />
           <label for="password">Password</label>
         </div>

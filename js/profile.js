@@ -6,6 +6,8 @@ const profileForm = document.getElementById("profile-details-form");
 const passwordForm = document.getElementById("profile-password-form");
 const fullNameInput = document.getElementById("profile-fullname");
 const emailInput = document.getElementById("profile-email");
+const phoneInput = document.getElementById("profile-phone");
+const genderInput = document.getElementById("profile-gender");
 const avatarPreview = document.getElementById("profile-avatar-preview");
 const avatarUpload = document.getElementById("avatar-upload");
 const saveAvatarBtn = document.getElementById("save-avatar-btn");
@@ -47,6 +49,10 @@ async function checkUserAndLoadProfile() {
         fullNameInput.value = fullName;
         avatarPreview.src = avatarUrl;
 
+        // Load professional fields
+        if (user.user_metadata?.phone) phoneInput.value = user.user_metadata.phone;
+        if (user.user_metadata?.gender) genderInput.value = user.user_metadata.gender;
+
         // Render Navbar
         if (userInfoNav) {
             userInfoNav.innerHTML = `
@@ -85,13 +91,27 @@ profileForm.addEventListener("submit", async (e) => {
     showLoader("Updating details...");
     try {
         const newName = fullNameInput.value.trim();
+        const newPhone = phoneInput.value.trim();
+        const newGender = genderInput.value;
 
-        const { error } = await supabase
+        // 1. Update users table with name (optional: phone/gender if columns added in future)
+        const { error: dbError } = await supabase
             .from('users')
             .update({ full_name: newName })
             .eq('id', currentUser.id);
 
-        if (error) throw error;
+        if (dbError) throw dbError;
+
+        // 2. Update user metadata for all options
+        const { error: authError } = await supabase.auth.updateUser({
+            data: {
+                full_name: newName,
+                phone: newPhone,
+                gender: newGender
+            }
+        });
+
+        if (authError) throw authError;
 
         hideLoader();
         Swal.fire("Success", "Profile details updated!", "success");

@@ -18,11 +18,16 @@ signupForm.addEventListener("submit", async (e) => {
 
   const fullName = document.getElementById("fullname").value.trim();
   const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const gender = document.getElementById("gender").value;
   const password = document.getElementById("password").value;
+  const baseImageFile = document.getElementById("base-image").files[0];
 
   showLoader("Creating your account...");
 
   try {
+    let baseImageUrl = null;
+
     // 1. Sign up user
     const { data, error } = await supabase.auth.signUp({
       email: email,
@@ -30,6 +35,8 @@ signupForm.addEventListener("submit", async (e) => {
       options: {
         data: {
           full_name: fullName,
+          phone: phone,
+          gender: gender
         }
       }
     });
@@ -39,6 +46,28 @@ signupForm.addEventListener("submit", async (e) => {
     const user = data.user;
 
     if (user) {
+      if (baseImageFile) {
+        showLoader("Uploading base image...");
+        const fileExt = baseImageFile.name.split('.').pop();
+        const fileName = `${user.id}/base_image_${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('wardrobe_images')
+          .upload(fileName, baseImageFile);
+
+        if (!uploadError) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('wardrobe_images')
+            .getPublicUrl(fileName);
+          baseImageUrl = publicUrl;
+
+          await supabase.auth.updateUser({
+            data: { base_image_url: baseImageUrl }
+          });
+        }
+      }
+
+      showLoader("Finalizing setup...");
       // 2. Insert into users table
       const { error: dbError } = await supabase
         .from('users')

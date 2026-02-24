@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="style/wardrobe.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </head>
 
 <body>
@@ -30,9 +31,30 @@
 
   <div class="main-wrapper" style="display: block; overflow-y: auto;">
     <div class="wardrobe-container">
-      <header>
-        <h1>My Digital Wardrobe</h1>
-        <p class="wardrobe-subtitle">Your saved virtual try-on looks</p>
+      <header
+        style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 2rem;">
+        <div class="css-wardrobe" style="margin: 20px 30px;">
+          <div class="wardrobe-body">
+            <div class="clothes-rack">
+              <div class="hanger hanger-1"></div>
+              <div class="hanger hanger-2"></div>
+              <div class="hanger hanger-3"></div>
+            </div>
+            <div class="wardrobe-door door-left">
+              <div class="door-handle"></div>
+            </div>
+            <div class="wardrobe-door door-right">
+              <div class="door-handle"></div>
+            </div>
+          </div>
+        </div>
+        <div style="text-align: left;">
+          <h1
+            style="font-size: 2.5rem; background: linear-gradient(135deg, var(--primary), #ec4899); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            My Digital Closet</h1>
+          <p class="wardrobe-subtitle" style="font-size: 1.1rem; color: var(--text-muted);">Your saved virtual try-on
+            looks curated for you.</p>
+        </div>
       </header>
 
       <!-- Filters -->

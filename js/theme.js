@@ -3,10 +3,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const body = document.body;
 
     // Check saved preference
-    if (localStorage.getItem("theme") === "light") {
+    const isLightThemeSaved = localStorage.getItem("theme") === "light";
+    if (isLightThemeSaved) {
         body.classList.add("light-theme");
-        updateIcon(true);
     }
+
+    // Always sync icon upon load
+    updateIcon(body.classList.contains("light-theme"));
 
     if (themeBtn) {
         themeBtn.addEventListener("click", () => {
@@ -22,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateIcon(isLight) {
         if (!themeBtn) return;
-        themeBtn.innerHTML = isLight ? "☀️" : "🌙";
+        themeBtn.innerHTML = isLight ? "🌙" : "☀️";
     }
 
     // ── Hamburger Mobile Menu Logic ─────────────────────────────────

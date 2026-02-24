@@ -138,7 +138,8 @@ window.retryOutfit = function (data) {
   const retryData = {
     style: data.style,
     cloth: data.cloth,
-    accessories: data.accessories
+    accessories: data.accessories,
+    baseImage: data.imageUrl
   };
   localStorage.setItem("retryOutfit", JSON.stringify(retryData));
   window.location.href = "tryon.html";

@@ -41,6 +41,12 @@ let uploadedImage = null; // Base64 of the person image
 let selectedCloth = null; // Base64 of the selected clothing item
 const accessories = {};
 
+// --- Immediate LocalStorage Cache Load ---
+let cachedBaseImage = localStorage.getItem("cached_base_image");
+if (cachedBaseImage) {
+    uploadedImage = cachedBaseImage;
+}
+
 // DOM Elements
 const userImageInput = document.getElementById('user-image');
 const previewImg = document.getElementById('preview');
@@ -64,7 +70,7 @@ function hideLoader() {
 
 // --- API TRIGGER FUNCTION (CRASH-PROOF LOCALHOST) ---
 window.triggerApiTryon = async function () {
-    const userImageFile = document.getElementById('user-image').files[0];
+    let userImageFile = document.getElementById('user-image').files[0];
 
     // Find the currently selected clothing file from any of the upload inputs
     const clothInputIds = ['outfit-upload', 'accessory-upload'];
@@ -89,6 +95,17 @@ window.triggerApiTryon = async function () {
             clothFile = new File([blob], fileName.split('?')[0], { type: blob.type });
         } catch (e) {
             console.error("Error fetching selected cloth:", e);
+        }
+    }
+
+    if (!userImageFile && uploadedImage) {
+        try {
+            console.log("Fetching base image from uploadedImage. Source:", uploadedImage.substring(0, 30));
+            const response = await fetch(uploadedImage);
+            const blob = await response.blob();
+            userImageFile = new File([blob], "base_image.png", { type: blob.type });
+        } catch (e) {
+            console.error("Error creating file from uploadedImage:", e);
         }
     }
 
@@ -206,6 +223,20 @@ async function checkUser() {
                     </div>
                 `;
 
+                const baseImageUrl = user.user_metadata?.base_image_url;
+
+                // If local storage is already showing an image, keep it. Otherwise check remote.
+                if (!uploadedImage && baseImageUrl) {
+                    uploadedImage = baseImageUrl;
+                }
+
+                if (uploadedImage) {
+                    previewImg.src = uploadedImage;
+                    previewImg.style.display = 'block';
+                    try { localStorage.setItem("cached_base_image", uploadedImage); } catch (e) { }
+                    renderPreviewOverlay();
+                }
+
                 if (!sessionStorage.getItem("welcomed")) {
                     Swal.fire({ icon: 'success', title: `🎉 Welcome, ${fullName}!`, text: 'You have logged in successfully.' });
                     sessionStorage.setItem("welcomed", "true");
@@ -224,6 +255,7 @@ checkUser();
 window.logout = async function () {
     await supabase.auth.signOut();
     sessionStorage.removeItem("welcomed");
+    localStorage.removeItem("cached_base_image");
     Swal.fire({ icon: 'info', title: 'Logged out', text: 'You have been logged out successfully.' }).then(() => {
         window.location.href = "login.html";
     });
@@ -233,11 +265,14 @@ userImageInput.addEventListener('change', function () {
     const file = this.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = function (e) {
+    reader.onload = async function (e) {
         uploadedImage = e.target.result;
         previewImg.src = uploadedImage;
         previewImg.style.display = 'block';
+        try { localStorage.setItem("cached_base_image", uploadedImage); } catch (err) { }
         renderPreviewOverlay();
+
+        // (Background auto-upload removed to prevent unwanted overwriting of default image)
     };
     reader.readAsDataURL(file);
 });
@@ -263,7 +298,8 @@ function renderPreviewOverlay() {
         html += `<img src="${selectedCloth}" style="position: absolute; top: 0; left: 0; max-width: 300px; opacity: 0.85;" ${clothCrossOrigin} />`;
     }
     html += `</div>`;
-    tryonResult.innerHTML = html;
+    // Removed tryonResult.innerHTML to preserve the 3D Lottie animation guide
+    // tryonResult is now exclusively modified by the AI Generation result.
 }
 
 
@@ -552,8 +588,9 @@ window.capturePhoto = function () {
 
     const dataURL = canvas.toDataURL("image/png");
     uploadedImage = dataURL;
-    preview.src = uploadedImage;
-    preview.style.display = "block";
+    previewImg.src = uploadedImage;
+    previewImg.style.display = "block";
+    try { localStorage.setItem("cached_base_image", uploadedImage); } catch (err) { }
 
     video.style.display = "none";
     document.getElementById("capture-btn").style.display = "none";
@@ -563,6 +600,83 @@ window.capturePhoto = function () {
     }
 
     renderPreviewOverlay();
+
+    // (Background auto-upload removed to prevent unwanted overwriting of default image)
+};
+
+window.useProfilePhoto = async function () {
+    showLoader("Processing...");
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        hideLoader();
+        return;
+    }
+
+    if (uploadedImage && uploadedImage.startsWith("data:image")) {
+        hideLoader();
+        const result = await Swal.fire({
+            title: 'Default Image',
+            text: "Do you want to save this new photo as your default, or load your existing default photo?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Save as Default',
+            cancelButtonText: 'Load Existing',
+            reverseButtons: true
+        });
+
+        if (result.isConfirmed) {
+            showLoader("Saving as Default Image...");
+            try {
+                const response = await fetch(uploadedImage);
+                const blob = await response.blob();
+                const file = new File([blob], "default_base.png", { type: "image/png" });
+                const fileName = `${user.id}/base_image_${Date.now()}.png`;
+
+                const { error: uploadError } = await supabase.storage.from('wardrobe_images').upload(fileName, file);
+                if (!uploadError) {
+                    const { data: { publicUrl } } = supabase.storage.from('wardrobe_images').getPublicUrl(fileName);
+                    await supabase.auth.updateUser({ data: { base_image_url: publicUrl } });
+                    uploadedImage = publicUrl;
+                    try { localStorage.setItem("cached_base_image", uploadedImage); } catch (err) { }
+                    hideLoader();
+                    Swal.fire("Saved", "This image is now your default image.", "success");
+                    return;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            hideLoader();
+            Swal.fire("Error", "Could not save image as default.", "error");
+            return;
+        } else if (result.dismiss !== Swal.DismissReason.cancel) {
+            return; // Clicked outside
+        }
+        showLoader("Loading default image...");
+    }
+
+    const baseImageUrl = user.user_metadata?.base_image_url;
+    if (baseImageUrl) {
+        uploadedImage = baseImageUrl;
+        previewImg.src = uploadedImage;
+        previewImg.style.display = 'block';
+        try { localStorage.setItem("cached_base_image", uploadedImage); } catch (err) { }
+        renderPreviewOverlay();
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+        });
+        Toast.fire({
+            icon: 'success',
+            title: 'Loaded default image'
+        });
+    } else {
+        Swal.fire("No Profile Photo", "You don't have a default base image saved. Please upload one and save it.", "info");
+    }
+    hideLoader();
 };
 
 window.goToWardrobe = function () {
@@ -590,6 +704,14 @@ window.addEventListener("DOMContentLoaded", () => {
                 Object.assign(accessories, data.accessories);
             }
 
+            if (data.baseImage) {
+                uploadedImage = data.baseImage;
+                previewImg.src = uploadedImage;
+                previewImg.style.display = 'block';
+            }
+
+            renderPreviewOverlay();
+
             // Clean up
             localStorage.removeItem("retryOutfit");
 
@@ -599,7 +721,7 @@ window.addEventListener("DOMContentLoaded", () => {
             // We can alert them.
             Swal.fire({
                 title: 'Outfit Loaded!',
-                text: 'Please upload your photo to try on this saved outfit.',
+                text: data.baseImage ? 'Your previously saved outfit and image have been loaded.' : 'Please upload your photo to try on this saved outfit.',
                 icon: 'success',
                 timer: 3000
             });

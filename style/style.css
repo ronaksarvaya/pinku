@@ -887,3 +887,94 @@ button {
   color: var(--text-muted);
   line-height: 1.5;
 }
+
+/* Holographic 3D Try-On Scanner Animation */
+.hologram-container {
+  position: relative;
+  width: 250px;
+  height: 350px;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 2px solid rgba(168, 85, 247, 0.4);
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.2);
+  background: radial-gradient(circle at center, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hologram-avatar {
+  width: 90%;
+  height: 90%;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  animation: hologram-wardrobe-change 9s infinite step-end, hologram-color-shift 6s infinite alternate ease-in-out;
+  filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.4));
+}
+
+@keyframes hologram-wardrobe-change {
+  0% {
+    background-image: url('../images/fashion_avatar.png');
+  }
+
+  33% {
+    background-image: url('../images/fashion_avatar_2.png');
+  }
+
+  66% {
+    background-image: url('../images/fashion_avatar_3.png');
+  }
+
+  100% {
+    background-image: url('../images/fashion_avatar.png');
+  }
+}
+
+.hologram-scanner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: #a855f7;
+  box-shadow: 0 0 15px 4px #a855f7;
+  animation: scan-vertical 3s infinite linear;
+  z-index: 5;
+  opacity: 0.9;
+}
+
+@keyframes scan-vertical {
+  0% {
+    top: -10px;
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    top: 105%;
+    opacity: 0;
+  }
+}
+
+@keyframes hologram-color-shift {
+  0% {
+    filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.4)) hue-rotate(0deg);
+  }
+
+  50% {
+    filter: drop-shadow(0 0 20px rgba(46, 196, 182, 0.6)) hue-rotate(90deg);
+  }
+
+  100% {
+    filter: drop-shadow(0 0 15px rgba(255, 107, 107, 0.4)) hue-rotate(180deg);
+  }
+}

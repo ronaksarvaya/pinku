@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <script src="js/theme.js"></script>
 </head>
 
@@ -31,15 +32,30 @@
     </nav>
 
     <div class="main-wrapper">
-        <div class="left-panel">
-            <h2 class="section-title">Upload & Customize</h2>
+        <div class="left-panel" style="position: relative;">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                <lottie-player src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f916/lottie.json"
+                    background="transparent" speed="1" style="width: 80px; height: 80px" direction="1" playMode="normal"
+                    loop autoplay></lottie-player>
+                <div>
+                    <h2 class="section-title" style="margin-bottom: 5px;">Upload & Customize</h2>
+                    <p style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Hi! I'm your AI stylist.
+                        Let's get started.</p>
+                </div>
+            </div>
 
             <div class="control-group">
                 <label>1. Your Photo</label>
-                <div class="upload-box">
-                    <input type="file" id="user-image" accept="image/*" />
-                    <button onclick="startWebcam()" class="secondary-btn">📷 Webcam</button>
+                <div class="photo-options" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+                    <button onclick="useProfilePhoto()" class="secondary-btn"
+                        style="flex: 1; padding: 10px; font-size: 14px;" title="Load from Profile">👤 Default
+                        Image</button>
+                    <button onclick="document.getElementById('user-image').click()" class="secondary-btn"
+                        style="flex: 1; padding: 10px; font-size: 14px;">📁 Device Upload</button>
+                    <button onclick="startWebcam()" class="secondary-btn"
+                        style="flex: 1; padding: 10px; font-size: 14px;">📷 Webcam</button>
                 </div>
+                <input type="file" id="user-image" accept="image/*" style="display: none;" />
                 <img id="preview" style="display:none; max-width:100%; border-radius:8px; margin-top:10px;"
                     alt="Preview" />
                 <video id="webcam" autoplay
@@ -91,8 +107,15 @@
 
         <div class="right-panel">
             <h2 class="section-title">Virtual Result</h2>
-            <div id="tryon-result" class="result-box">
-                <div class="placeholder-text">✨ Result will appear here</div>
+            <div id="tryon-result" class="result-box"
+                style="display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; min-height: 400px; overflow: hidden;">
+                <div class="hologram-container">
+                    <div class="hologram-avatar" title="3D Fashion Guide"></div>
+                    <div class="hologram-scanner"></div>
+                </div>
+                <div class="placeholder-text"
+                    style="position: absolute; bottom: 30px; background: rgba(0,0,0,0.4); padding: 8px 16px; border-radius: 20px; backdrop-filter: blur(4px); color: white; border: 1px solid rgba(255,255,255,0.2); z-index: 10;">
+                    ✨ Virtual result will appear here</div>
             </div>
 
             <div class="action-buttons">
