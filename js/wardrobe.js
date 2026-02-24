@@ -45,6 +45,9 @@ async function checkUserAndLoadWardrobe() {
   }
   // userInfo.innerHTML = `Logged in as <strong>${user.email}</strong><br><br>`;
 
+  const wardrobeBody = document.querySelector('.wardrobe-body');
+  if (wardrobeBody) wardrobeBody.classList.add('is-open');
+
   try {
     const { data, error } = await supabase
       .from('wardrobe')
@@ -76,12 +79,14 @@ async function checkUserAndLoadWardrobe() {
 
     if (allOutfits.length === 0) {
       wardrobeList.innerHTML = "<p>No outfits saved yet.</p>";
+      if (wardrobeBody) setTimeout(() => wardrobeBody.classList.remove('is-open'), 1500);
     } else {
       renderWardrobe(allOutfits);
     }
   } catch (e) {
     console.error("Error loading wardrobe:", e);
     wardrobeList.innerHTML = "<p>Error loading your wardrobe.</p>";
+    if (wardrobeBody) setTimeout(() => wardrobeBody.classList.remove('is-open'), 1000);
   }
 }
 
@@ -102,11 +107,15 @@ function formatDate(dateString) {
 // Update time display in render
 // Update time display in render
 function renderWardrobe(outfits) {
+  const wardrobeBody = document.querySelector('.wardrobe-body');
+  if (wardrobeBody) wardrobeBody.classList.add('is-open');
+
   wardrobeList.innerHTML = "";
 
-  outfits.forEach(data => {
+  outfits.forEach((data, index) => {
     const item = document.createElement("div");
-    item.className = "outfit-card";
+    item.className = "outfit-card animate-in";
+    item.style.animationDelay = `${index * 0.15}s`;
 
     const time = formatDate(data.timestamp);
 
@@ -131,6 +140,35 @@ function renderWardrobe(outfits) {
 
     wardrobeList.appendChild(item);
   });
+
+  // Calculate trajectory dynamically based on 3D Wardrobe's real location
+  const cssWardrobe = document.querySelector('.css-wardrobe');
+  if (cssWardrobe) {
+    requestAnimationFrame(() => {
+      const wRect = cssWardrobe.getBoundingClientRect();
+      const wX = wRect.left + (wRect.width / 2);
+      const wY = wRect.top + (wRect.height / 2);
+
+      const cards = wardrobeList.querySelectorAll('.outfit-card');
+      cards.forEach(card => {
+        const cRect = card.getBoundingClientRect();
+        // Calculate center of destination card
+        const cX = cRect.left + (cRect.width / 2);
+        const cY = cRect.top + (cRect.height / 2);
+
+        // Setup variables for the destination to animate back down into position
+        card.style.setProperty('--fly-start-x', `${wX - cX}px`);
+        card.style.setProperty('--fly-start-y', `${wY - cY}px`);
+        // Random rotational variance for a chaotic burst look
+        card.style.setProperty('--fly-rot', `${(Math.random() - 0.5) * 60}deg`);
+      });
+    });
+  }
+
+  const durationMs = outfits.length * 150 + 800 + 400; // 0.8s animation + staggered delays + buffer
+  setTimeout(() => {
+    if (wardrobeBody) wardrobeBody.classList.remove('is-open');
+  }, durationMs);
 }
 
 window.retryOutfit = function (data) {

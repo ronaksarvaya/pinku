@@ -28,6 +28,7 @@
   font-weight: 800;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 6px;
   letter-spacing: -0.3px;
@@ -363,7 +364,8 @@ select:focus {
   transform-origin: left center;
   border-right: 1px solid #3e2723;
   justify-content: flex-end;
-  animation: auto-open-left 6s infinite ease-in-out;
+  transform: rotateY(0deg);
+  /* default closed */
 }
 
 .door-right {
@@ -371,7 +373,16 @@ select:focus {
   transform-origin: right center;
   border-left: 1px solid #3e2723;
   justify-content: flex-start;
-  animation: auto-open-right 6s infinite ease-in-out;
+  transform: rotateY(0deg);
+  /* default closed */
+}
+
+.wardrobe-body.is-open .door-left {
+  transform: rotateY(-120deg);
+}
+
+.wardrobe-body.is-open .door-right {
+  transform: rotateY(120deg);
 }
 
 .door-handle {
@@ -383,36 +394,25 @@ select:focus {
   box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-@keyframes auto-open-left {
-
-  0%,
-  15% {
-    transform: rotateY(0deg);
+@keyframes fly-out-card {
+  0% {
+    opacity: 0;
+    transform: translate(var(--fly-start-x, 0), var(--fly-start-y, -300px)) scale(0.1) rotateZ(var(--fly-rot, -15deg)) rotateX(45deg);
   }
 
-  35%,
-  85% {
-    transform: rotateY(-120deg);
-  }
-
-  100% {
-    transform: rotateY(0deg);
-  }
-}
-
-@keyframes auto-open-right {
-
-  0%,
-  15% {
-    transform: rotateY(0deg);
-  }
-
-  35%,
-  85% {
-    transform: rotateY(120deg);
+  50% {
+    opacity: 0.8;
   }
 
   100% {
-    transform: rotateY(0deg);
+    opacity: 1;
+    transform: translate(0, 0) scale(1) rotateZ(0) rotateX(0);
   }
 }
+
+.outfit-card.animate-in {
+  opacity: 0;
+  animation: fly-out-card 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* --------- Fly Out Sequence End --------- */
